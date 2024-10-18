@@ -1,0 +1,4 @@
+LLM_PARAMS:
+  model  : "databricks-meta-llama-3-1-70b-instruct"
+  temperature : 0.2
+  max_tokens : 1000
