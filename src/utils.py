@@ -28,10 +28,6 @@ class Utilities:
             base_url = f"{self.DATABRICKS_HOST}/serving-endpoints"
         )
     
-    def clear_history(self):
-        self.queries_conversation = self.utils.get_default_conversation(conversation_type = "query")
-        self.agent_conversation = self.utils.get_default_conversation(conversation_type = "agent")
-    
     def get_default_conversation(self, is_agent):
         logger.debug("getting default conversations")
         if is_agent :
@@ -175,7 +171,6 @@ class Utilities:
     def markdown_to_html(self, markdown_text):
         logger.debug("converting markdown to html")
         self.markdown_text = markdown.markdown(markdown_text, extensions=['tables'])
-        return self.markdown_text
     
     
     def invoke_llm(self, conversations):

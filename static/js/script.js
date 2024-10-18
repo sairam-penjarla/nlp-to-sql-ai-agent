@@ -87,7 +87,6 @@ async function sendMessage() {
         const messageContainer = messageContainers[messageContainers.length - 1];
         let resultText = messageContainer.querySelector(".bot-message");
 
-        let agentOutput = ""; // To store the entire output for markdown conversion
         let done = false;
 
         while (!done) {
@@ -103,7 +102,6 @@ async function sendMessage() {
                 
                 for (const parsedLine of parsedLines) {
                     resultText.innerHTML += parsedLine; 
-                    agentOutput += parsedLine; // Collect agent output for markdown conversion
                 }
             }
         }
@@ -114,7 +112,7 @@ async function sendMessage() {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ agent_output: agentOutput }),
+            body: JSON.stringify(),
         });
 
         if (!responseMarkdown.ok) {
