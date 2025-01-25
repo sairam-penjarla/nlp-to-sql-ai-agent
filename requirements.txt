@@ -4,4 +4,4 @@ pandasql
 langchain
 python-dotenv
 langchain-community
-markdown
+python-pptx

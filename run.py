@@ -1,81 +1,166 @@
 from src.utils import Utilities
+from custom_logger import logger
+import os
+from flask import jsonify
+import traceback
+import json
 from flask import (
-    Flask, 
-    Response, 
+    Flask,
+    Response,
     jsonify, 
     render_template, 
     request
 )
+from src.multi_shot_examples import get_exmaples
 from src.prompt_templates import ( 
-    COMPLETE_SCHEMA, 
-    COLUMN_GUIDELINES
+    COMPLETE_SCHEMA,
+    COLUMN_GUIDELINES,
+    QUERY_GUIDELINES,
+    AGENT_GUIDELINES
 )
+import traceback
 
 app = Flask(__name__)
 utils = Utilities()
 
-agent_conversation = utils.get_default_conversation(is_agent = True)
-queries_conversation = utils.get_default_conversation(is_agent = False)
+queries_conversation = get_exmaples('queries_conversation')
+agent_conversation = get_exmaples('agent_conversation')
 
 @app.route("/")
 def landing_page():
-    return render_template("index.html")
+    try:
+        previous_session_meta_data = utils.session_utils.get_session_meta_data()
+        return render_template("index.html", previous_session_meta_data = previous_session_meta_data)
+    except Exception:
+        # Log the full traceback in case of an error
+        print("Error in landing page function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/extract_relavant_schema', methods=['POST'])
 def extract_relavant_schema():
     data = request.get_json()
     user_input = data.get('user_input')
+    session_id = data.get('session_id')
 
     msg = utils.get_user_msg( 
             content = COLUMN_GUIDELINES + COMPLETE_SCHEMA, 
-            conversations = agent_conversation, 
-            present_question = user_input, 
+            question = user_input, 
         )
-    llm_output = utils.invoke_llm(conversations = [msg])
-    RELAVANT_SCHEMA = utils.get_relavant_schema(llm_output)
+    llm_output = utils.invoke_llm(messages = [msg])
+    relavant_schema = utils.get_relavant_schema(llm_output)
+    session_icon = utils.get_session_icon(session_id)
+    return jsonify({"relavant_schema" : relavant_schema, "session_icon":session_icon})
 
-    return jsonify({"relavant_schema" : RELAVANT_SCHEMA})
+@app.route('/get_session_data', methods=['POST'])
+def get_session_data():
+    data = request.get_json()
+    session_id = data.get('sessionId')
 
-@app.route('/gather_sql_content', methods=['POST'])
-def gather_sql_content():
+    session_data = utils.session_utils.get_session_data(session_id)
+    return jsonify({'session_data': session_data})
+
+@app.route('/delete_session', methods=['POST'])
+def delete_session():
+    data = request.get_json()
+    session_id = data.get('session_id')
+
+    if not session_id:
+        return jsonify({"error": "Session ID is required."}), 400
+
+    response, status_code = utils.session_utils.delete_session(session_id)
+    return jsonify(response), status_code
+
+@app.route('/delete_all_sessions', methods=['POST'])
+def delete_all_sessions():
+    response, status_code = utils.session_utils.delete_all_sessions()
+    return jsonify(response), status_code
+
+@app.route('/update_session', methods=['POST'])
+def update_session():
+
     data = request.get_json()
 
-    RELAVANT_SCHEMA = data.get('relavant_schema')
-    user_input = data.get('user_input')
+    session_id      = data.get('session_id')
+    prompt          = data.get('prompt')
+    sql_query  = data.get('sql_query')
+    session_icon  = data.get('session_icon')
+    chatbot_assistant  = data.get('chatbot_assistant')
 
-    msg = utils.get_user_msg( 
-                content = RELAVANT_SCHEMA, 
-                conversations = queries_conversation, 
-                present_question = user_input, 
-            )
-    llm_output = utils.invoke_llm(conversations = queries_conversation + [msg])
-    query = utils.extract_query(llm_output)
-    df = utils.execute_query(query)
-    SQL_CONTENT = utils.get_sql_content(df)
+    utils.session_utils.add_data(session_id, prompt, sql_query, chatbot_assistant, session_icon)
 
-    return jsonify({"sql_content" : SQL_CONTENT})
+    return jsonify({"success" : True})
 
+
+@app.route('/generate_sql_query', methods=['POST'])
+def generate_sql_query():
+    try:
+        data = request.get_json()
+        relavant_schema = data.get('relavant_schema')
+        user_input = data.get('user_input')
+        session_id = data.get('session_id')
+
+        # Retrieve previous messages for SQL query generation
+        messages = utils.get_previous_messages(session_id, QUERY_GUIDELINES, "sql_query")
+        msg = {
+            "role": "user",
+            "content": f"\n\nRelevant Schema:{relavant_schema}\n\nQuestion:{user_input}\n\nAnswer:"
+        }
+
+        # Generate SQL query
+        llm_output = utils.invoke_llm(messages + [msg])
+        sql_query = utils.extract_query(llm_output)
+        # Return the generated SQL query
+        return jsonify({"sql_query": sql_query})
+
+    except Exception:
+        print("Error in generate_sql_query function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
+
+@app.route('/execute_sql_query', methods=['POST'])
+def execute_sql_query():
+    try:
+        data = request.get_json()
+        sql_query = data.get('sql_query')
+
+        # Execute the SQL query
+        sql_data = utils.execute_query(sql_query)
+
+        # Return the data fetched from the query
+        return jsonify({"sql_data": sql_data})
+
+    except Exception:
+        print("Error in execute_sql_query function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/invoke_agent', methods=['POST'])
 def invoke_agent():
-    data = request.get_json()
+    try:
+        data = request.get_json()
+        sql_data = data.get('sql_data')
+        user_input = data.get('user_input')
+        session_id = data.get('session_id')
 
-    SQL_CONTENT = data.get('sql_content')
-    user_input = data.get('user_input')
+        # Retrieve previous messages for chatbot assistant
+        messages = utils.get_previous_messages(session_id, AGENT_GUIDELINES, "chatbot_assistant")
+        msg = {
+            "role": "user",
+            "content": f"SQL Data:{sql_data}\n\nQuestion:{user_input}\n\nAnswer:"
+        }
 
-    msg = utils.get_user_msg( 
-                content = SQL_CONTENT, 
-                conversations = agent_conversation, 
-                present_question = user_input, 
-            )
-    agent_output = utils.invoke_llm_stream(conversations = agent_conversation + [msg])
+        # Stream the response from the LLM
+        agent_output = utils.invoke_llm_stream(messages=messages + [msg])
+        
+        return Response(agent_output, content_type='text/event-stream')
 
-    return Response(agent_output, content_type='text/event-stream')
-
-
-@app.route('/markdown_to_html', methods=['POST'])
-def markdown_to_html():
-    return jsonify({"agent_output" : utils.markdown_text})
+    except Exception:
+        print("Error in invoke_agent function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 if __name__ == "__main__":
+
     app.run(host="0.0.0.0", port=8000)
