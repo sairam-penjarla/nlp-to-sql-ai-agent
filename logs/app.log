@@ -1,0 +1,49 @@
+2025-01-26 15:07:52,408 - INFO - Connected to the database: sessions.db
+2025-01-26 15:07:52,408 - INFO - Creating tables if they don't exist...
+2025-01-26 15:07:52,414 - INFO - Tables created or already exist.
+2025-01-26 15:07:52,512 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.168.0.101:8000
+2025-01-26 15:07:52,513 - INFO - [33mPress CTRL+C to quit[0m
+2025-01-26 15:08:30,381 - INFO - 127.0.0.1 - - [26/Jan/2025 15:08:30] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-01-26 15:08:31,354 - INFO - 127.0.0.1 - - [26/Jan/2025 15:08:31] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-01-26 15:09:33,319 - INFO - Connected to the database: sessions.db
+2025-01-26 15:09:33,320 - INFO - Creating tables if they don't exist...
+2025-01-26 15:09:33,320 - INFO - Tables created or already exist.
+2025-01-26 15:09:33,362 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.168.0.101:8000
+2025-01-26 15:09:33,362 - INFO - [33mPress CTRL+C to quit[0m
+2025-01-26 15:09:35,994 - INFO - 127.0.0.1 - - [26/Jan/2025 15:09:35] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2025-01-26 15:10:36,893 - INFO - Connected to the database: sessions.db
+2025-01-26 15:10:36,894 - INFO - Creating tables if they don't exist...
+2025-01-26 15:10:36,894 - INFO - Tables created or already exist.
+2025-01-26 15:10:36,945 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://192.168.0.101:8000
+2025-01-26 15:10:36,945 - INFO - [33mPress CTRL+C to quit[0m
+2025-01-26 15:10:40,646 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET / HTTP/1.1" 200 -
+2025-01-26 15:10:40,770 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-01-26 15:10:40,770 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/css/markdown_styles.css HTTP/1.1" 200 -
+2025-01-26 15:10:40,777 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/bone.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,790 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/list-plus.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,792 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/plus.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,808 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/delete_black.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,817 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/vegan.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,821 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-01-26 15:10:40,833 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/lamp-desk.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,841 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/fish-symbol.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,843 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/paw-print.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,855 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/mic.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,856 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/session-icons/flower-2.svg HTTP/1.1" 200 -
+2025-01-26 15:10:40,873 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:40] "GET /static/images/arrow-left.svg HTTP/1.1" 200 -
+2025-01-26 15:10:58,918 - INFO - Retrieving session_icon for session: f69144c4-14c6-4b42-b505-d1f55e79e654
+2025-01-26 15:10:58,920 - WARNING - No session icon found for session_id: f69144c4-14c6-4b42-b505-d1f55e79e654
+2025-01-26 15:10:58,922 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:58] "POST /get_random_session_icon HTTP/1.1" 200 -
+2025-01-26 15:10:58,922 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:58] "GET /static/images/circle-stop.svg HTTP/1.1" 200 -
+2025-01-26 15:10:58,967 - INFO - 127.0.0.1 - - [26/Jan/2025 15:10:58] "GET /static/images/session-icons/leaf.svg HTTP/1.1" 200 -
+2025-01-26 15:11:00,336 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-01-26 15:11:00,363 - INFO - 127.0.0.1 - - [26/Jan/2025 15:11:00] "[35m[1mPOST /extract_relavant_schema HTTP/1.1[0m" 500 -

@@ -97,7 +97,7 @@ class SessionUtilities:
                     "prompt": str(row["prompt"]),
                     "session_icon": row["session_icon"],
                 }
-        return result[::-1]
+        return result
 
     def delete_session(self, session_id: str) -> Tuple[Dict[str, str], int]:
         try:
