@@ -16,8 +16,6 @@ import random
 df = pd.read_csv("dataset/cleaned_phone_search_data.csv")
 
 load_dotenv()
-TOKEN = os.getenv('DATABRICKS_TOKEN')
-HOST = os.getenv("DATABRICKS_HOST")
 
 class Utilities:
     def __init__(self):
@@ -25,10 +23,7 @@ class Utilities:
         self.config = get_config()
         self.session_utils = SessionUtilities()
 
-        self.client = OpenAI(
-            api_key=TOKEN,
-            base_url=f"{HOST}/serving-endpoints"
-        )
+        self.client = OpenAI()
 
     def get_user_msg(self, 
                      content, 
