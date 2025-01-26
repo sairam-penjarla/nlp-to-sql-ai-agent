@@ -66,7 +66,7 @@ This project is useful for anyone looking to integrate NLP with databases for qu
 
 ## Blog Post
 
-For a more detailed explanation of this project and its real-world applications, check out this [blog post](https://psairam9301.wixsite.com/website/post/unveiling-ai-agents-how-they-work-real-world-applications-and-my-nlp-to-sql-agent-project).
+For a more detailed explanation of this project and its real-world applications, check out this [blog post](https://sairampenjarla.notion.site/NLP-to-SQL-AI-AGENT-187d56a2fc2781aab916fc63638a71ba).
 
 ## Project Architecture
 
