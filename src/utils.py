@@ -75,7 +75,16 @@ class Utilities:
     def execute_query(self, query):
         logger.debug("executing query")
         if query:
-            return ps.sqldf(query)
+            # Execute the query and get the result as a DataFrame
+            result_df = ps.sqldf(query)
+
+            # Convert the DataFrame to a JSON-formatted string
+            result_json = result_df.to_json(orient="records")
+
+            return result_json
+        else:
+            return json.dumps({"error": "No query provided"})
+
     
     def get_sql_content(self, df):
         logger.debug("getting sql content")

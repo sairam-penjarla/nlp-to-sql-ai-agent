@@ -45,26 +45,25 @@ function generateSessionId() {
     });
 }
 
+function scrollToBottom(){
+    const chatContainer = document.getElementById("chat-container");
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
 function handlePaste(event) {
     event.preventDefault();
     const text = event.clipboardData.getData("text/plain");
     document.execCommand("insertText", false, text);
 }
 
-function slideLoadingAnimation() {
+function loadingAnimation() {
     const chatContainer = document.getElementById("chat-container");
     const loadingMessageContainer = document.createElement("div");
     loadingMessageContainer.classList.add("bot-loading-message-container");
     loadingMessageContainer.id = "slide-loading-animation";
     chatContainer.appendChild(loadingMessageContainer);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 function resetSendButton() {
-    // const slideLoadingAnimationConst = document.getElementById("slide-loading-animation");
-    // if (slideLoadingAnimationConst) {
-    //     slideLoadingAnimationConst.remove();
-    // }
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
     const sendIcon = document.getElementById("sendIcon");
@@ -273,7 +272,8 @@ function appendUserMessage(content) {
     chatContainer.appendChild(allUserMessages);
 
     // Scroll to the bottom of the chat container
-    // chatContainer.scrollTop = chatContainer.scrollHeight;
+    scrollToBottom()
+
 }
 function appendChatbotMessage(content) {
   const chatContainer = document.getElementById("chat-container");
@@ -304,29 +304,61 @@ function appendChatbotMessage(content) {
   chatContainer.appendChild(messageContainer);
 
   // Scroll to the bottom of the chat container
-  // chatContainer.scrollTop = chatContainer.scrollHeight;
+  scrollToBottom()
+
 }
 
 
 async function generateChatbotAnswer() {
     const userInput = document.getElementById("userInput");
     const sendButton = document.getElementById("sendButton");
+    const sendIcon = document.getElementById("sendIcon");
     const message = userInput.innerText.trim();
-  
+
     if (message === "") return;
-  
+
     userInput.setAttribute("contenteditable", "false");
     sendButton.disabled = true;
-  
+    sendIcon.src = "static/images/circle-stop.svg";
+
     // Append the user message block
     appendUserMessage(message);
     userInput.innerText = "";
-  
+
+    loadingAnimation()
+
+    let sessionIcon; // Define sessionIcon outside the block
+
     try {
         if (!currentSessionId) {
             currentSessionId = generateSessionId(); // Generate a new session ID
+
+            // Fetch the session icon using the /get_random_session_icon route
+            const iconResponse = await fetch("/get_random_session_icon", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ session_id: currentSessionId }),
+            });
+
+            if (!iconResponse.ok) {
+                console.error("Error fetching session icon:", iconResponse.statusText);
+                throw new Error("Failed to fetch session icon");
+            }
+
+            const iconData = await iconResponse.json();
+            sessionIcon = iconData.relavant_schema; // Assuming the icon is returned as 'relavant_schema'
+
+            // Update the sidebar with the new session and icon
+            updateSidebarWithSession(currentSessionId, message, sessionIcon);
         }
-  
+
+        // If the session already exists, assign a default or placeholder icon
+        if (!sessionIcon) {
+            sessionIcon = "default_icon"; // Replace with an actual default icon if necessary
+        }
+
         // Step 1: Extract relevant schema
         const schemaResponse = await fetch("/extract_relavant_schema", {
             method: "POST",
@@ -338,13 +370,13 @@ async function generateChatbotAnswer() {
                 session_id: currentSessionId,
             }),
         });
-  
+
         if (!schemaResponse.ok) {
             console.error("Error extracting relevant schema:", schemaResponse.statusText);
             appendChatbotMessage("Error: Could not extract relevant schema.");
             return;
         }
-  
+
         const schemaData = await schemaResponse.json();
         const relavantSchema = schemaData.relavant_schema;
         if (!relavantSchema) {
@@ -352,9 +384,7 @@ async function generateChatbotAnswer() {
             appendChatbotMessage("Error: Relevant schema is missing.");
             return;
         }
-  
-        updateSidebarWithSession(currentSessionId, message, schemaData.session_icon); // Update the sidebar with the new session
-  
+
         // Step 2: Generate the SQL query using the relevant schema
         const sqlQueryResponse = await fetch("/generate_sql_query", {
             method: "POST",
@@ -367,30 +397,52 @@ async function generateChatbotAnswer() {
                 session_id: currentSessionId,
             }),
         });
-  
+
         if (!sqlQueryResponse.ok) {
             console.error("Error generating SQL query:", sqlQueryResponse.statusText);
             appendChatbotMessage("Error: Could not generate SQL query.");
             return;
         }
-  
+
         const sqlQueryData = await sqlQueryResponse.json();
         let sqlQuery = sqlQueryData.sql_query;
-        let sqlData;
-  
+
         if (!sqlQuery) {
             console.log("SQL query is not returned, using default message.");
             sqlData = "Answer this question in general without SQL data."; // Default message if no SQL query is generated
         } else {
-            sqlData = sqlQueryData.sql_data;
+            // Step 3: Execute the SQL query using the generated SQL query
+            const executeQueryResponse = await fetch("/execute_sql_query", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sql_query: sqlQuery, // Pass the generated SQL query to execute
+                }),
+            });
+
+            if (!executeQueryResponse.ok) {
+                console.error("Error executing SQL query:", executeQueryResponse.statusText);
+                appendChatbotMessage("Error: Could not execute SQL query.");
+                return;
+            }
+
+            const executeQueryData = await executeQueryResponse.json();
+            sqlData = executeQueryData.sql_data;
         }
-  
+
         if (!sqlData) {
             console.error("SQL data is missing in the response.");
             appendChatbotMessage("Error: No data returned from SQL query.");
             return;
         }
-  
+        
+        const loadingAnimationConst = document.getElementById("slide-loading-animation");
+        if (loadingAnimationConst) {
+            loadingAnimationConst.remove();
+        }
+        
         // Step 3: Invoke the agent for response
         const responseAgent = await fetch("/invoke_agent", {
             method: "POST",
@@ -404,13 +456,13 @@ async function generateChatbotAnswer() {
                 sql_data: sqlData,
             }),
         });
-  
+
         if (!responseAgent.ok) {
             console.error("Error invoking agent:", responseAgent.statusText);
             appendChatbotMessage("Error: " + responseAgent.statusText);
             return;
         }
-  
+
         // Stream the response
         appendChatbotMessage(""); // Add an empty chatbot message container for streaming
         const reader = responseAgent.body.getReader();
@@ -418,20 +470,26 @@ async function generateChatbotAnswer() {
         const messageContainers = document.querySelectorAll(".chatbot-message-container");
         const messageContainer = messageContainers[messageContainers.length - 1];
         let resultText = messageContainer.querySelector(".text-content-container");
-  
+
         let done = false;
         let llmOutput = "";
-  
+        const userInput = document.getElementById("userInput");
+        userInput.setAttribute("contenteditable", "true");
+        userInput.focus();
+
         while (!done) {
             const { value, done: readerDone } = await reader.read();
             done = readerDone;
-  
+
             if (value) {
                 llmOutput += decoder.decode(value);
                 resultText.innerHTML = marked.parse(llmOutput);
             }
+            // Scroll to the bottom
+            scrollToBottom()
+
         }
-        
+
         // Step 4: Update conversation in the session
         const responseUpdateSession = await fetch("/update_session", {
             method: "POST",
@@ -443,11 +501,10 @@ async function generateChatbotAnswer() {
                 prompt: message,
                 chatbot_assistant: llmOutput,
                 sql_query: sqlQuery,
-                session_icon: schemaData.session_icon,
+                session_icon: sessionIcon,
             }),
         });
-        
-  
+
         if (!responseUpdateSession.ok) {
             console.error("Error updating session:", responseUpdateSession.statusText);
             appendChatbotMessage("Error: " + responseUpdateSession.statusText);
@@ -456,11 +513,11 @@ async function generateChatbotAnswer() {
         console.error("Error during fetch or streaming:", error.message);
         appendChatbotMessage("Error: " + error.message);
     } finally {
-        // Reset the input and send button
-        userInput.setAttribute("contenteditable", "true");
-        sendButton.disabled = false;
+        // Reset the input, Loading animation and send button
+        resetSendButton()
     }
-  }
+}
+
   
 
 

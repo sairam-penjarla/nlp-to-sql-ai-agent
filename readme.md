@@ -1,76 +1,79 @@
-# NLP to SQL AI Agent
+# [![Website](https://img.shields.io/badge/Website-Visit-brightgreen)](https://psairam9301.wixsite.com/website) [![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red)](https://www.youtube.com/@sairampenjarla) [![GitHub](https://img.shields.io/badge/GitHub-Explore-black)](https://github.com/sairam-penjarla) [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)](https://www.linkedin.com/in/sairam-penjarla-b5041b121/) [![Instagram](https://img.shields.io/badge/Instagram-Follow-ff69b4)](https://www.instagram.com/sairam.ipynb/)
 
-This project is a Flask application that utilizes natural language processing to interact with SQL databases. It allows users to input queries in natural language, extract relevant schemas, and generate SQL content dynamically. The application can be easily modified to work with different databases and prompt guidelines.
+# Gen AI PPT Maker
 
-## Features
+## Project Overview
+Gen AI PPT Maker is a powerful AI-driven tool that enables users to create professional presentations effortlessly. Users can specify their requirements, such as the number of slides, the desired content for each slide, and even select slide designs. The AI generates customized slides as per the inputs, allowing users to preview and download individual slides with chosen designs. The project leverages OpenAI's GPT technology, Flask, HTML, CSS, JS, and SQLite for seamless functionality.
 
-- **Extract Relevant Schema**: Extracts the relevant schema based on user input and provided guidelines.
-- **Gather SQL Content**: Executes SQL queries on the database and retrieves the content.
-- **Invoke Agent**: Streams responses from the AI agent based on the SQL content and user input.
-- **Markdown to HTML Conversion**: Converts agent output from Markdown format to HTML.
+---
 
 ## Getting Started
 
-### Prerequisites
+Follow the instructions below to set up and run the project on your local machine.
 
-- Python 3.x
-- Flask
-- Required libraries (install using `pip install -r requirements.txt`)
-
-### Installation
-
-1. **Clone the Repository**:
-
-   ```bash
-   git clone https://github.com/sairam-penjarla/nlp-to-sql-ai-agent.git
-   cd nlp-to-sql-ai-agent
-   ```
-
-2. **Install Dependencies**:
-
-   Make sure you have all required libraries installed. You can install them by running:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Download the Dataset**:
-
-   This project uses a sample dataset from Kaggle. Download the [Phone Search Dataset](https://www.kaggle.com/datasets/shreyasur965/phone-search-dataset?resource=download) and place it in the appropriate directory.
-
-### Configuration
-
-- You can modify the `execute_query` function in `src/utils.py` to connect to your own database.
-- Update the guidelines in `src/prompt_templates.py` as per your requirements.
-- Adjust the examples in the `get_default_conversation` function in `src/utils.py` to customize the conversations.
-
-### Running the Application
-
-To run the application, execute the following command:
-
+### Step 1: Clone the Repository
 ```bash
-python run.py
+git clone https://github.com/sairam-penjarla/genai-ppt-maker-flask
 ```
 
-The application will start and be accessible at `http://0.0.0.0:8000`.
+### Step 2: Navigate to the Project Directory
+```bash
+cd genAI-ppt-maker-flask-
+```
 
-## API Endpoints
+### Step 3: Set Up the Environment
+To learn how to create a virtual environment, check out this [blog post](https://psairam9301.wixsite.com/website/post/learn-virtualenv-basics).
 
-- `POST /extract_relavant_schema`: Extracts relevant schema based on user input.
-- `POST /gather_sql_content`: Gathers SQL content based on the extracted schema and user input.
-- `POST /invoke_agent`: Invokes the agent to get a response based on the SQL content.
-- `POST /markdown_to_html`: Converts the agent output from Markdown to HTML.
+#### Using `virtualenv` (Recommended)
+```bash
+python3 -m venv env
+source env/bin/activate  # For Linux/Mac
+env\Scripts\activate    # For Windows
+```
 
-## YouTube Video
+#### Using Anaconda
+```bash
+conda create -n genai-ppt-maker python=3.9
+conda activate genai-ppt-maker
+```
 
-For a walkthrough of this project, check out my YouTube video [here](<insert_youtube_video_link>).
+### Step 4: Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
-## License
+### Step 5: Add Your OpenAI API Token
+1. Create a `.env` file in the root directory.
+2. Add the following line to the file:
+   ```env
+   OPENAI_API_TOKEN=your_openai_api_key_here
+   ```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Step 6: Run the Project
+```bash
+python app.py
+```
 
-## Acknowledgements
+### Step 7: Access the Application
+Open your browser and navigate to:
+```text
+http://127.0.0.1:5000/
+```
 
-- [Kaggle](https://www.kaggle.com) for the dataset.
-- [Flask](https://flask.palletsprojects.com/) for the web framework.
-- [OpenAI](https://openai.com/) for the LLM capabilities.
+---
+
+## Features and Functionality
+
+- **AI-Powered Slide Creation:** Specify the number of slides and detailed content for each slide, and let the AI generate them for you.
+- **Slide Design Options:** Choose from a catalog of designs, and download individual slides as PPT files with the selected design and text.
+- **Session Management:** View past sessions in the sidebar for quick access and reference.
+- **Logging:** Logs are stored in the `app.log` file for troubleshooting and monitoring purposes.
+- **OpenAI Integration:** Utilize OpenAI's GPT model for generating content dynamically.
+- **Tech Stack:** Flask for backend, HTML/CSS/JS for frontend, and SQLite for database management.
+
+---
+
+## Additional Resources
+
+- [Project Blog Post](https://psairam9301.wixsite.com/website/post/project-blog-gen-ai-ppt-maker)
+- [YouTube Video](https://www.youtube.com/@sairampenjarla)

@@ -1,6 +1,6 @@
 import sqlite3
 import json
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from custom_logger import logger
 
 class SessionUtilities:
@@ -16,7 +16,7 @@ class SessionUtilities:
         with self.conn:
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS sessions (
-                    session_id TEXT PRIMARY KEY,
+                    session_id TEXT ,
                     prompt TEXT,
                     sql_query TEXT,
                     chatbot_assistant TEXT,
@@ -97,27 +97,29 @@ class SessionUtilities:
                     "prompt": str(row["prompt"]),
                     "session_icon": row["session_icon"],
                 }
-        return result
+        return result[::-1]
 
-    def delete_all_sessions(self) -> Dict[str, str]:
-        try:
-            self.conn.execute("DELETE FROM sessions")
-            self.conn.commit()
-            logger.info("All sessions deleted successfully.")
-            return {"message": "All sessions deleted successfully."}
-        except Exception as e:
-            logger.error(f"Error deleting all sessions: {e}")
-            return {"error": "Failed to delete sessions."}
-
-    def delete_session(self, session_id: str) -> Dict[str, str]:
+    def delete_session(self, session_id: str) -> Tuple[Dict[str, str], int]:
         try:
             self.conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
             self.conn.commit()
             logger.info(f"Session {session_id} deleted successfully.")
-            return {"message": "Session deleted successfully."}
+            return {"message": "Session deleted successfully."}, 200  # Return 200 for success
         except Exception as e:
             logger.error(f"Error deleting session {session_id}: {e}")
-            return {"error": "Failed to delete session."}
+            return {"error": "Failed to delete session."}, 500  # Return 500 for failure
+
+
+    def delete_all_sessions(self) -> Tuple[Dict[str, str], int]:
+        try:
+            self.conn.execute("DELETE FROM sessions")
+            self.conn.commit()
+            logger.info("All sessions deleted successfully.")
+            return {"message": "All sessions deleted successfully."}, 200  # Return 200 for success
+        except Exception as e:
+            logger.error(f"Error deleting all sessions: {e}")
+            return {"error": "Failed to delete sessions."}, 500  # Return 500 for failure
+
 
     def close(self):
         logger.info("Closing database connection...")

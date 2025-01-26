@@ -30,66 +30,106 @@ agent_conversation = get_exmaples('agent_conversation')
 def landing_page():
     try:
         previous_session_meta_data = utils.session_utils.get_session_meta_data()
-        return render_template("index.html", previous_session_meta_data = previous_session_meta_data)
+        return render_template("index.html", previous_session_meta_data=previous_session_meta_data)
     except Exception:
-        # Log the full traceback in case of an error
-        print("Error in landing page function:")
+        print("Error in landing_page function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
+@app.route('/get_random_session_icon', methods=['POST'])
+def get_random_session_icon():
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        return jsonify({"relavant_schema": utils.get_session_icon(session_id)})
+    except Exception:
+        print("Error in landing_page function:")
         print(traceback.format_exc())
         return jsonify({"error": "An internal server error occurred"}), 500
 
 @app.route('/extract_relavant_schema', methods=['POST'])
 def extract_relavant_schema():
-    data = request.get_json()
-    user_input = data.get('user_input')
-    session_id = data.get('session_id')
+    try:
+        data = request.get_json()
+        user_input = data.get('user_input')
 
-    msg = utils.get_user_msg( 
-            content = COLUMN_GUIDELINES + COMPLETE_SCHEMA, 
-            question = user_input, 
+        msg = utils.get_user_msg(
+            content=COLUMN_GUIDELINES + COMPLETE_SCHEMA,
+            question=user_input,
         )
-    llm_output = utils.invoke_llm(messages = [msg])
-    relavant_schema = utils.get_relavant_schema(llm_output)
-    session_icon = utils.get_session_icon(session_id)
-    return jsonify({"relavant_schema" : relavant_schema, "session_icon":session_icon})
+        llm_output = utils.invoke_llm(messages=[msg])
+        relavant_schema = utils.get_relavant_schema(llm_output)
+        return jsonify({"relavant_schema": relavant_schema})
+
+    except Exception:
+        print("Error in extract_relavant_schema function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
 
 @app.route('/get_session_data', methods=['POST'])
 def get_session_data():
-    data = request.get_json()
-    session_id = data.get('sessionId')
+    try:
+        data = request.get_json()
+        session_id = data.get('sessionId')
+        session_data = utils.session_utils.get_session_data(session_id)
+        return jsonify({'session_data': session_data})
 
-    session_data = utils.session_utils.get_session_data(session_id)
-    return jsonify({'session_data': session_data})
+    except Exception:
+        print("Error in get_session_data function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
 
 @app.route('/delete_session', methods=['POST'])
 def delete_session():
-    data = request.get_json()
-    session_id = data.get('session_id')
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
 
-    if not session_id:
-        return jsonify({"error": "Session ID is required."}), 400
+        if not session_id:
+            return jsonify({"error": "Session ID is required."}), 400
 
-    response, status_code = utils.session_utils.delete_session(session_id)
-    return jsonify(response), status_code
+        response, status_code = utils.session_utils.delete_session(session_id)
+        return jsonify(response), status_code
+
+    except Exception:
+        print("Error in delete_session function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
 
 @app.route('/delete_all_sessions', methods=['POST'])
 def delete_all_sessions():
-    response, status_code = utils.session_utils.delete_all_sessions()
-    return jsonify(response), status_code
+    try:
+        response, status_code = utils.session_utils.delete_all_sessions()
+        return jsonify(response), status_code
+
+    except Exception:
+        print("Error in delete_all_sessions function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+
 
 @app.route('/update_session', methods=['POST'])
 def update_session():
+    try:
+        data = request.get_json()
 
-    data = request.get_json()
+        session_id = data.get('session_id')
+        prompt = data.get('prompt')
+        sql_query = data.get('sql_query')
+        session_icon = data.get('session_icon')
+        chatbot_assistant = data.get('chatbot_assistant')
 
-    session_id      = data.get('session_id')
-    prompt          = data.get('prompt')
-    sql_query  = data.get('sql_query')
-    session_icon  = data.get('session_icon')
-    chatbot_assistant  = data.get('chatbot_assistant')
+        utils.session_utils.add_data(session_id, prompt, sql_query, chatbot_assistant, session_icon)
 
-    utils.session_utils.add_data(session_id, prompt, sql_query, chatbot_assistant, session_icon)
+        return jsonify({"success": True})
 
-    return jsonify({"success" : True})
+    except Exception:
+        print("Error in update_session function:")
+        print(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
 
 
 @app.route('/generate_sql_query', methods=['POST'])
@@ -110,7 +150,6 @@ def generate_sql_query():
         # Generate SQL query
         llm_output = utils.invoke_llm(messages + [msg])
         sql_query = utils.extract_query(llm_output)
-        # Return the generated SQL query
         return jsonify({"sql_query": sql_query})
 
     except Exception:
@@ -127,14 +166,13 @@ def execute_sql_query():
 
         # Execute the SQL query
         sql_data = utils.execute_query(sql_query)
-
-        # Return the data fetched from the query
         return jsonify({"sql_data": sql_data})
 
     except Exception:
         print("Error in execute_sql_query function:")
         print(traceback.format_exc())
         return jsonify({"error": "An internal server error occurred"}), 500
+
 
 @app.route('/invoke_agent', methods=['POST'])
 def invoke_agent():
@@ -153,7 +191,6 @@ def invoke_agent():
 
         # Stream the response from the LLM
         agent_output = utils.invoke_llm_stream(messages=messages + [msg])
-        
         return Response(agent_output, content_type='text/event-stream')
 
     except Exception:

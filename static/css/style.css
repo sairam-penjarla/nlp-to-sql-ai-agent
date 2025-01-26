@@ -181,7 +181,7 @@ html {
 }
 
 .sidebar {
-  min-width: 200px;
+  min-width: 230px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -726,10 +726,9 @@ input:checked + .slider:before {
 
 /* --------------------------------- */
 /* Dark Mode */
-.dark-mode p {
+.dark-mode .chatbot-message {
   color: #ffffff;
 }
-
 .dark-mode a:link,
 .dark-mode a:visited,
 .dark-mode a:hover,
@@ -824,10 +823,9 @@ input:checked + .slider:before {
 
 /* --------------------------------- */
 /* Light Mode */
-.light-mode p {
+.light-mode .chatbot-message {
   color: #000000;
 }
-
 .light-mode a:link,
 .light-mode a:visited,
 .light-mode a:hover,
@@ -929,10 +927,10 @@ input:checked + .slider:before {
 
 
 .chatbot-message-container{
-  width: 70%;
+  width: 73%;
 }
 .chatbot-message{
-
+  width: 890px;
 }
 .text-content-container{
   
