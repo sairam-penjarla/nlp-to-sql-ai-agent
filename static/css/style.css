@@ -738,6 +738,9 @@ input:checked + .slider:before {
 .dark-mode body {
   background-color: #252525;
 }
+.dark-mode .message table tr{
+  background-color: #252525;
+}
 
 .dark-mode .input-container {
   border: 2px solid #404040;
@@ -836,7 +839,9 @@ input:checked + .slider:before {
 .light-mode body {
   background-color: #ffffff;
 }
-
+.light-mode .message table tr{
+  background-color: #ffffff;
+}
 .light-mode .input-container {
   border: 2px solid #ccc;
   background-color: #ffffff;
