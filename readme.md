@@ -57,7 +57,7 @@ python app.py
 ### Step 7: Access the Application
 Open your browser and navigate to:
 ```text
-http://127.0.0.1:5000/
+http://127.0.0.1:8000/
 ```
 
 ---

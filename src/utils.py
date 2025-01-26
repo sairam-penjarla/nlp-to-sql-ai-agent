@@ -23,7 +23,7 @@ class Utilities:
         self.config = get_config()
         self.session_utils = SessionUtilities()
 
-        self.client = OpenAI()
+        self.client = OpenAI( )
 
     def get_user_msg(self, 
                      content, 
