@@ -23,7 +23,12 @@ class Utilities:
         self.config = get_config()
         self.session_utils = SessionUtilities()
 
-        self.client = OpenAI( )
+        TOKEN = os.environ.get('TOKEN')
+        HOST = os.environ.get('HOST')
+        self.client = OpenAI(
+            api_key = TOKEN,
+            base_url = f"{HOST}/serving-endpoints"
+        )
 
     def get_user_msg(self, 
                      content, 
