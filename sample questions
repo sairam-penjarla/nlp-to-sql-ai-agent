@@ -1,26 +1,29 @@
-What are the product titles for the given ASINs?
-Which products are marked as "Amazon Choice" or "Best Seller"?
-Are there any Prime-eligible products in this list?
-What are the current prices of all products?
-Which products have the highest discount compared to their original price?
-What is the average price of all listed products?
-Are there any products with a unit price specified?
-Which products have the highest star ratings?
-What is the average star rating of all products?
-Which products have the highest number of ratings?
-Are there any products with less than a 4.0-star rating?
-How many products are available with stock details?
-Which products are low in stock (e.g., "Only 1 left in stock")?
-Which products have active coupon offers, and what are the coupon details?
-What is the minimum offer price for each product?
-How many offers are available for each product?
-What are the delivery options for each product?
-Which products are eligible for free delivery?
-Which products have the highest sales volume?
-Are there any climate pledge-friendly products in the list?
-Which products have variations available?
-For products with unit pricing, what is the price per unit and the unit count?
-What are the URLs for viewing these products on Amazon?
-Can I get the product photo URLs for creating a catalog or a presentation?
-Are all products listed in the same currency?
-What are the products with missing or incomplete data (e.g., original price, star rating)?
+What is the total quantity of all items in stock?
+
+Which supplier provides the most expensive product?
+
+What is the average price of products in the Electronics category?
+
+How many products are currently out of stock?
+
+Which warehouse location has the highest number of unique products?
+
+What is the most expensive item in the inventory?
+
+How many products were purchased in January 2024?
+
+Which categories have the lowest stock availability?
+
+What is the total value of inventory stored in the Mumbai warehouse?
+
+How many suppliers are providing products for the Furniture category?
+
+What is the total quantity of Kitchen Appliances in stock?
+
+Which product has the earliest purchase date?
+
+How many products have a warranty or expiry date?
+
+What is the most common stock status among all items?
+
+Which supplier provides the highest number of different products?

@@ -3,7 +3,7 @@ let currentSessionId = null;
 
 window.onload = function () {
     // Clear chat container on page load
-    document.getElementById("chat-container").innerHTML = "";
+    // document.getElementById("chat-container").innerHTML = "";
 };
 
 document.querySelector(".new-session-button").addEventListener("click", function () {
@@ -13,7 +13,7 @@ document.querySelector(".new-session-button").addEventListener("click", function
 const toggleThemeButton = document.getElementById("theme-toggle");
 
 // Load the preferred theme from localStorage
-const currentTheme = localStorage.getItem("theme") || "light-mode";
+const currentTheme = "light-mode" || "light-mode";
 document.documentElement.classList.add(currentTheme); // Apply theme to the html tag
 toggleThemeButton.textContent = currentTheme === "dark-mode" ? "Switch to Light Mode" : "Switch to Dark Mode";
 
@@ -70,7 +70,6 @@ function resetSendButton() {
 
     userInput.setAttribute("contenteditable", "true");
     sendButton.disabled = false;
-    sendIcon.src = "static/images/arrow-left.svg";
     sendIcon.onclick = null; // Remove the stopStream function from the click event
 }
 
@@ -112,7 +111,7 @@ function updateSidebarWithSession(sessionId, firstQuestion, session_icon) {
     // Create the delete icon
     const deleteIcon = document.createElement("img");
     deleteIcon.className = "delete-button"; // Add a class for styling
-    deleteIcon.src = "/static/images/delete_black.svg"; // Set the source of the delete icon
+    deleteIcon.src = "/static/images/delete.svg"; // Set the source of the delete icon
     deleteIcon.alt = "Delete"; // Set an alt text for accessibility
     deleteIcon.onclick = (e) => {
         e.stopPropagation(); // Prevent triggering the `onclick` for the session item
@@ -232,8 +231,12 @@ function renderSession(sessionData, sessionId) {
     sessionData.forEach((item) => {
         try {
             const prompt = item.prompt;
+            const sql_query = item.sql_query;
+            const sql_data = item.sql_data;
             const chatbot_assistant = item.chatbot_assistant;
             appendUserMessage(prompt);
+            appendSQLQuerry(sql_query);
+            appendSQLDataMessage(sql_data);
             appendChatbotMessage(chatbot_assistant);
         } catch (error) {
             console.error("Error rendering session data:", error);
@@ -243,6 +246,10 @@ function renderSession(sessionData, sessionId) {
 
 function appendUserMessage(content) {
     const chatContainer = document.getElementById("chat-container");
+    const welcomeContainer = document.getElementById("welcome-container");
+    if (welcomeContainer) {
+        welcomeContainer.style.display = "none";
+    }
 
     const messageContainer = document.createElement("div");
     messageContainer.classList.add("user-message-container");
@@ -266,15 +273,30 @@ function appendUserMessage(content) {
 
     const allUserMessages = document.createElement("div");
     allUserMessages.classList.add("all-user-messages");
+    
+    // Create the profile picture container
+    const profilePicContainer = document.createElement("div");
+    profilePicContainer.classList.add("profile-pic-container");
+
+    // Create the profile picture element
+    const profilePic = document.createElement("img");
+    profilePic.classList.add("profile-pic");
+    profilePic.src = "/static/images/user.svg"; // Path to the profile picture
+
+    // Append the profile picture to the profile picture container
+    profilePicContainer.appendChild(profilePic);
+
+    // Append the profile picture container to the all user messages container
+    allUserMessages.appendChild(profilePicContainer);
     allUserMessages.appendChild(messageContainer);
 
     // Append the message container to the chat container
     chatContainer.appendChild(allUserMessages);
 
     // Scroll to the bottom of the chat container
-    scrollToBottom()
-
+    scrollToBottom();
 }
+
 function appendChatbotMessage(content) {
   const chatContainer = document.getElementById("chat-container");
 
@@ -307,7 +329,116 @@ function appendChatbotMessage(content) {
   scrollToBottom()
 
 }
+function appendSQLDataMessage(content) {
+    const chatContainer = document.getElementById("chat-container");
 
+    // Create the show/hide button
+    const showHideButton = document.createElement("div");
+    showHideButton.classList.add("show-hide-data");
+    showHideButton.style.cursor = "pointer";
+
+    // Create the button text
+    const buttonText = document.createElement("span");
+    buttonText.textContent = "View Query Results";
+
+    // Create the down arrow image
+    const arrowImage = document.createElement("img");
+    arrowImage.classList.add("down-arrow");
+    arrowImage.src = "/static/images/down-arrow.svg"; // Path to the down arrow image
+    arrowImage.style.transition = "transform 0.3s"; // Smooth transition for rotation
+
+    // Append text and image to the button
+    showHideButton.appendChild(buttonText);
+    showHideButton.appendChild(arrowImage);
+
+    // Create the message container
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("chatbot-data-message-container");
+    messageContainer.style.display = "none"; // Initially hidden
+
+    // Create the main content wrapper
+    const messageContentWrapper = document.createElement("div");
+    messageContentWrapper.classList.add("chatbot-data-message");
+    messageContentWrapper.classList.add("message");
+
+    // Create the text content container
+    const textContentContainer = document.createElement("div");
+    textContentContainer.classList.add("data-text-content-container");
+
+    if (content) {
+        textContentContainer.innerHTML = marked.parse(content);
+    }
+
+    // Append the text content container to the main content wrapper
+    messageContentWrapper.appendChild(textContentContainer);
+
+    // Append the message content wrapper to the message container
+    messageContainer.appendChild(messageContentWrapper);
+
+    // Append the show/hide button and message container to the chat container
+    chatContainer.appendChild(showHideButton);
+    chatContainer.appendChild(messageContainer);
+
+    // Add event listener to toggle the visibility of the message container and rotate the arrow
+    showHideButton.addEventListener("click", () => {
+        const isHidden = messageContainer.style.display === "none";
+        messageContainer.style.display = isHidden ? "block" : "none";
+        arrowImage.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
+    });
+
+    // Scroll to the bottom of the chat container
+    scrollToBottom();
+}
+function appendSQLQuerry(content) {
+    const chatContainer = document.getElementById("chat-container");
+    const welcomeContainer = document.getElementById("welcome-container");
+    if (welcomeContainer) {
+        welcomeContainer.style.display = "none";
+    }
+
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("chatbot-sql-container");
+
+    // Create the main content wrapper
+    const messageContentWrapper = document.createElement("div");
+    messageContentWrapper.classList.add("chatbot-sql-message");
+    messageContentWrapper.classList.add("message");
+
+    // Create the text content container
+    const textContentContainer = document.createElement("div");
+    textContentContainer.classList.add("sql-text-content-container");
+
+    textContentContainer.textContent = content;
+
+    // Append the text content and action container to the main content wrapper
+    messageContentWrapper.appendChild(textContentContainer);
+
+    // Append the message content wrapper and edit icon container to the message container
+    messageContainer.appendChild(messageContentWrapper);
+
+    const allUserMessages = document.createElement("div");
+    allUserMessages.classList.add("all-sql-messages");
+
+    const botPicContainer = document.createElement("div");
+    botPicContainer.classList.add("bot-pic-container");
+
+    // Create the bot picture element
+    const botPic = document.createElement("img");
+    botPic.classList.add("bot-pic");
+    botPic.src = "/static/images/sparkles.svg"; // Path to the bot picture
+
+    // Append the bot picture to the bot picture container
+    botPicContainer.appendChild(botPic);
+    allUserMessages.appendChild(botPicContainer);
+    allUserMessages.appendChild(messageContainer);
+
+    // Append the message container to the chat container
+    chatContainer.appendChild(allUserMessages);
+
+    // Scroll to the bottom of the chat container
+    scrollToBottom()
+
+}
 
 async function generateChatbotAnswer() {
     const userInput = document.getElementById("userInput");
@@ -319,7 +450,6 @@ async function generateChatbotAnswer() {
 
     userInput.setAttribute("contenteditable", "false");
     sendButton.disabled = true;
-    sendIcon.src = "static/images/circle-stop.svg";
 
     // Append the user message block
     appendUserMessage(message);
@@ -403,9 +533,30 @@ async function generateChatbotAnswer() {
             appendChatbotMessage("Error: Could not generate SQL query.");
             return;
         }
+        
+        // Stream the response
+        appendSQLQuerry(""); // Add an empty chatbot message container for streaming
+        const sqlReader = sqlQueryResponse.body.getReader();
+        const SQLDecoder = new TextDecoder("utf-8");
+        const sqlContainers = document.querySelectorAll(".chatbot-sql-container");
+        const sqlContainer = sqlContainers[sqlContainers.length - 1];
+        let resultSQLText = sqlContainer.querySelector(".sql-text-content-container");
 
-        const sqlQueryData = await sqlQueryResponse.json();
-        let sqlQuery = sqlQueryData.sql_query;
+        let SQLdone = false;
+        let sqlQuery = "";
+
+        while (!SQLdone) {
+            const { value, done: readerDone } = await sqlReader.read();
+            SQLdone = readerDone;
+
+            if (value) {
+                sqlQuery += SQLDecoder.decode(value);
+                resultSQLText.innerHTML = marked.parse(sqlQuery);
+            }
+            // Scroll to the bottom
+            scrollToBottom()
+
+        }
 
         if (!sqlQuery) {
             console.log("SQL query is not returned, using default message.");
@@ -437,6 +588,8 @@ async function generateChatbotAnswer() {
             appendChatbotMessage("Error: No data returned from SQL query.");
             return;
         }
+
+        appendSQLDataMessage(sqlData)
         
         const loadingAnimationConst = document.getElementById("slide-loading-animation");
         if (loadingAnimationConst) {
@@ -501,6 +654,7 @@ async function generateChatbotAnswer() {
                 prompt: message,
                 chatbot_assistant: llmOutput,
                 sql_query: sqlQuery,
+                sql_data: sqlData,
                 session_icon: sessionIcon,
             }),
         });

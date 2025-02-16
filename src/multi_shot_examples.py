@@ -1,52 +1,106 @@
 from src.prompt_templates import COMPLETE_SCHEMA, QUERY_GUIDELINES, AGENT_GUIDELINES
 
 query_guidelines = [
-                # Example 1
-                {
-                    "role": "user",
-                    "content": "Question: What is the average product price for items listed as best sellers? Answer:",
-                },
-                {
-                    "role": "assistant",
-                    "content": "```sql\nSELECT AVG(product_price) AS avg_best_seller_price FROM df WHERE is_best_seller = True;```",
-                },
-                # Example 2
-                {
-                    "role": "user",
-                    "content": "Question: How many products are available for sale with a rating higher than 4.0? Answer:",
-                },
-                {
-                    "role": "assistant",
-                    "content": "```sql\nSELECT COUNT(*) AS num_products FROM df WHERE product_star_rating > 4.0;```",
-                },
-                # Example 3
-                {
-                    "role": "user",
-                    "content": "Question: Which product has the highest sales volume? Answer:",
-                },
-                {
-                    "role": "assistant",
-                    "content": "```sql\nSELECT product_title, sales_volume FROM df ORDER BY sales_volume DESC LIMIT 1;```",
-                },
-                # Example 4
-                {
-                    "role": "user",
-                    "content": "Question: What are the distinct product titles available for products that are Amazon Choice? Answer:",
-                },
-                {
-                    "role": "assistant",
-                    "content": "```sql\nSELECT DISTINCT product_title FROM df WHERE is_amazon_choice = True;```",
-                },
-                # Example 5
-                {
-                    "role": "user",
-                    "content": "Question: What is the minimum offer price for products that have variations? Answer:",
-                },
-                {
-                    "role": "assistant",
-                    "content": "```sql\nSELECT MIN(product_minimum_offer_price) AS min_offer_price FROM df WHERE has_variations = True;```",
-                }
-            ]
+    # Example 1
+    {
+        "role": "user",
+        "content": "Question: Which items in the inventory belong to the 'Electronics' category and have a quantity greater than 5? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT item_id, item_name, category, quantity, price_per_unit, supplier FROM inventory WHERE category = 'Electronics' AND quantity > 5;",
+    },
+
+    # Example 2
+    {
+        "role": "user",
+        "content": "Question: What is the total value of all inventory items (quantity * price per unit)? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT SUM(quantity * price_per_unit) AS total_inventory_value FROM inventory;",
+    },
+
+    # Example 3
+    {
+        "role": "user",
+        "content": "Question: How many unique categories of products are available in the inventory? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT COUNT(DISTINCT category) AS unique_categories FROM inventory;",
+    },
+
+    # Example 4
+    {
+        "role": "user",
+        "content": "Question: Which supplier provides the most number of different products? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT supplier, COUNT(DISTINCT item_id) AS product_count FROM inventory GROUP BY supplier ORDER BY product_count DESC LIMIT 1;",
+    },
+
+    # Example 5
+    {
+        "role": "user",
+        "content": "Question: List all products that are out of stock. Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT item_id, item_name FROM inventory WHERE stock_status = 'Out of Stock' OR quantity = 0;",
+    },
+
+    # Example 6
+    {
+        "role": "user",
+        "content": "Question: What is the average price per unit for each product category? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT category, AVG(price_per_unit) AS avg_price FROM inventory GROUP BY category;",
+    },
+
+    # Example 7
+    {
+        "role": "user",
+        "content": "Question: What are the top 3 most expensive items in the inventory? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT item_id, item_name, price_per_unit FROM inventory ORDER BY price_per_unit DESC LIMIT 3;",
+    },
+
+    # Example 8
+    {
+        "role": "user",
+        "content": "Question: How many items have an expiry date set? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT COUNT(*) AS items_with_expiry FROM inventory WHERE expiry_date IS NOT NULL;",
+    },
+
+    # Example 9
+    {
+        "role": "user",
+        "content": "Question: Which warehouse location has the highest number of products stored? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT warehouse_location, COUNT(item_id) AS total_products FROM inventory GROUP BY warehouse_location ORDER BY total_products DESC LIMIT 1;",
+    },
+
+    # Example 10
+    {
+        "role": "user",
+        "content": "Question: What is the total number of items supplied by 'ABC Electronics'? Answer:",
+    },
+    {
+        "role": "assistant",
+        "content": "SELECT SUM(quantity) AS total_items_supplied FROM inventory WHERE supplier = 'ABC Electronics';",
+    }
+]
 
 
 

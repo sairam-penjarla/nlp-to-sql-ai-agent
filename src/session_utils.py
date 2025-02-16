@@ -19,20 +19,21 @@ class SessionUtilities:
                     session_id TEXT ,
                     prompt TEXT,
                     sql_query TEXT,
+                    sql_data TEXT,
                     chatbot_assistant TEXT,
                     session_icon TEXT
                 )
             ''')
         logger.info("Tables created or already exist.")
 
-    def add_data(self, session_id: str, prompt: str, sql_query: str, chatbot_assistant: str, session_icon: str):
+    def add_data(self, session_id: str, prompt: str, sql_query: str, sql_data:str, chatbot_assistant: str, session_icon: str):
         logger.info(f"Adding data to session: {session_id}...")
         with self.conn:
             self.conn.execute(
                 '''INSERT INTO sessions 
-                   (session_id, prompt, sql_query, chatbot_assistant, session_icon) 
-                   VALUES (?, ?, ?, ?, ?)''',
-                (session_id, prompt, sql_query, chatbot_assistant, session_icon)
+                   (session_id, prompt, sql_query, sql_data, chatbot_assistant, session_icon) 
+                   VALUES (?, ?, ?, ?, ?, ?)''',
+                (session_id, prompt, sql_query, sql_data, chatbot_assistant, session_icon)
             )
 
     def get_session_data(self, session_id: str) -> List[Dict[str, str]]:
@@ -40,7 +41,7 @@ class SessionUtilities:
         session_data = []
         with self.conn:
             results = self.conn.execute(
-                '''SELECT prompt, sql_query, chatbot_assistant
+                '''SELECT prompt, sql_query, sql_data, chatbot_assistant
                 FROM sessions
                 WHERE session_id = ?''', (session_id,)
             ).fetchall()
@@ -50,6 +51,7 @@ class SessionUtilities:
                     session_data.append({
                         "prompt": str(row["prompt"]),
                         "sql_query": str(row["sql_query"]),
+                        "sql_data": str(row["sql_data"]),
                         "chatbot_assistant": str(row["chatbot_assistant"]),
                     })
         return session_data
