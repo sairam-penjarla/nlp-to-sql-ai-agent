@@ -2,6 +2,8 @@ import sqlite3
 import json
 from typing import List, Dict, Optional, Tuple
 from custom_logger import logger
+import sqlite3
+import logging
 
 class SessionUtilities:
     def __init__(self, db_name: str = "sessions.db"):
@@ -16,7 +18,8 @@ class SessionUtilities:
         with self.conn:
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS sessions (
-                    session_id TEXT ,
+                    session_id TEXT,
+                    conversation_id TEXT PRIMARY KEY,
                     prompt TEXT,
                     sql_query TEXT,
                     sql_data TEXT,
@@ -26,22 +29,45 @@ class SessionUtilities:
             ''')
         logger.info("Tables created or already exist.")
 
-    def add_data(self, session_id: str, prompt: str, sql_query: str, sql_data:str, chatbot_assistant: str, session_icon: str):
-        logger.info(f"Adding data to session: {session_id}...")
-        with self.conn:
-            self.conn.execute(
-                '''INSERT INTO sessions 
-                   (session_id, prompt, sql_query, sql_data, chatbot_assistant, session_icon) 
-                   VALUES (?, ?, ?, ?, ?, ?)''',
-                (session_id, prompt, sql_query, sql_data, chatbot_assistant, session_icon)
-            )
+    def add_data_query_only(self, session_id, prompt, sql_query, session_icon, conversation_id):
+        """
+        Inserts a new row into the sessions table.
+        """
+        try:
+            with self.conn:
+                self.conn.execute('''
+                    INSERT INTO sessions (session_id, conversation_id, prompt, sql_query, session_icon) 
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (session_id, conversation_id, prompt, sql_query, session_icon))
+            logger.info(f"Inserted new session data for session_id: {session_id}")
+        except sqlite3.IntegrityError:
+            logger.error(f"Failed to insert session {session_id}: conversation_id already exists.")
+
+    def add_data_chatbot_response(self, session_id, sql_query, sql_data, chatbot_assistant, conversation_id):
+        """
+        Updates an existing record in the sessions table based on conversation_id.
+        """
+        try:
+            with self.conn:
+                updated_rows = self.conn.execute('''
+                    UPDATE sessions 
+                    SET sql_query = ?, sql_data = ?, chatbot_assistant = ? 
+                    WHERE conversation_id = ?
+                ''', (sql_query, sql_data, chatbot_assistant, conversation_id)).rowcount
+            if updated_rows == 0:
+                logger.warning(f"No record found for conversation_id: {conversation_id}")
+            else:
+                logger.info(f"Updated session data for conversation_id: {conversation_id}")
+        except Exception as e:
+            logger.error(f"Error updating session {session_id}: {str(e)}")
+
 
     def get_session_data(self, session_id: str) -> List[Dict[str, str]]:
         logger.info(f"Retrieving session data for session: {session_id}")
         session_data = []
         with self.conn:
             results = self.conn.execute(
-                '''SELECT prompt, sql_query, sql_data, chatbot_assistant
+                '''SELECT prompt, sql_query, sql_data, chatbot_assistant, conversation_id
                 FROM sessions
                 WHERE session_id = ?''', (session_id,)
             ).fetchall()
@@ -53,6 +79,7 @@ class SessionUtilities:
                         "sql_query": str(row["sql_query"]),
                         "sql_data": str(row["sql_data"]),
                         "chatbot_assistant": str(row["chatbot_assistant"]),
+                        "conversation_id": str(row["conversation_id"])
                     })
         return session_data
 

@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 import traceback
 
 from flask import Flask, Response, jsonify, render_template, request
@@ -7,8 +8,6 @@ from flask import Flask, Response, jsonify, render_template, request
 from custom_logger import logger
 from src.prompt_templates import (
     AGENT_GUIDELINES,
-    COLUMN_GUIDELINES,
-    COMPLETE_SCHEMA,
     QUERY_GUIDELINES,
 )
 from src.utils import Utilities
@@ -46,28 +45,16 @@ def get_random_session_icon():
         return jsonify({"error": "An internal server error occurred"}), 500
 
 
-@app.route("/extract_relavant_schema", methods=["POST"])
-def extract_relavant_schema():
+@app.route("/get_random_conversation_id", methods=["POST"])
+def get_random_conversation_id():
     try:
-        logger.info("extract_relavant_schema endpoint accessed")
-        data = request.get_json()
-        logger.info(f"Received data: {data}")
-        user_input = data.get("user_input")
-        logger.info(f"User input: {user_input}")
-
-        msg = utils.get_user_msg(
-            content=COLUMN_GUIDELINES + COMPLETE_SCHEMA,
-            question=user_input,
-        )
-        logger.info(f"Generated message: {msg}")
-        llm_output = utils.invoke_llm(messages=[msg])
-        logger.info(f"LLM output: {llm_output}")
-        relavant_schema = utils.get_relavant_schema(llm_output)
-        logger.info(f"Relevant schema: {relavant_schema}")
-        return jsonify({"relavant_schema": relavant_schema})
+        logger.info("get_random_conversation_id endpoint accessed")
+        conversation_id = str(uuid.uuid4())
+        logger.info(f"Generated conversation ID: {conversation_id}")
+        return jsonify({"conversation_id": conversation_id})
 
     except Exception:
-        logger.error("Error in extract_relavant_schema function:")
+        logger.error("Error in get_random_conversation_id function:")
         logger.error(traceback.format_exc())
         return jsonify({"error": "An internal server error occurred"}), 500
 
@@ -127,8 +114,8 @@ def delete_all_sessions():
         return jsonify({"error": "An internal server error occurred"}), 500
 
 
-@app.route("/update_session", methods=["POST"])
-def update_session():
+@app.route("/update_session_query_only", methods=["POST"])
+def update_session_query_only():
     try:
         logger.info("update_session endpoint accessed")
         data = request.get_json()
@@ -137,13 +124,38 @@ def update_session():
         session_id = data.get("session_id")
         prompt = data.get("prompt")
         sql_query = data.get("sql_query")
-        sql_data = data.get("sql_data")
         session_icon = data.get("session_icon")
-        chatbot_assistant = data.get("chatbot_assistant")
+        conversation_id = data.get("conversation_id")
 
         logger.info(f"Updating session with ID: {session_id}")
-        utils.session_utils.add_data(
-            session_id, prompt, sql_query, sql_data, chatbot_assistant, session_icon
+        utils.session_utils.add_data_query_only(
+            session_id, prompt, sql_query, session_icon, conversation_id
+        )
+        logger.info("Session updated successfully")
+
+        return jsonify({"success": True})
+
+    except Exception:
+        logger.error("Error in update_session function:")
+        logger.error(traceback.format_exc())
+        return jsonify({"error": "An internal server error occurred"}), 500
+    
+@app.route("/update_session_chatbot_response", methods=["POST"])
+def update_session_chatbot_response():
+    try:
+        logger.info("update_session endpoint accessed")
+        data = request.get_json()
+        logger.info(f"Received data: {data}")
+
+        session_id = data.get("session_id")
+        sql_query = data.get("sql_query")
+        sql_data = data.get("sql_data")
+        chatbot_assistant = data.get("chatbot_assistant")
+        conversation_id = data.get("conversation_id")
+
+        logger.info(f"Updating session with ID: {session_id}")
+        utils.session_utils.add_data_chatbot_response(
+            session_id, sql_query, sql_data, chatbot_assistant, conversation_id
         )
         logger.info("Session updated successfully")
 

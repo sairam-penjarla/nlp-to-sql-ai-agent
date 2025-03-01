@@ -233,23 +233,29 @@ function renderSession(sessionData, sessionId) {
             const prompt = item.prompt;
             const sql_query = item.sql_query;
             const sql_data = item.sql_data;
+            const conversation_id = item.conversation_id;
             const chatbot_assistant = item.chatbot_assistant;
-            appendUserMessage(prompt);
-            appendSQLQuerry(sql_query);
-            appendSQLDataMessage(sql_data);
-            appendChatbotMessage(chatbot_assistant);
+            appendUserMessage(prompt, conversation_id);
+            appendSQLQuery(prompt, sql_query, conversation_id);
+            appendSQLDataMessage(sql_data, conversation_id);
+            appendChatbotMessage(chatbot_assistant, conversation_id);
         } catch (error) {
             console.error("Error rendering session data:", error);
         }
     });
 }
 
-function appendUserMessage(content) {
+function appendUserMessage(content, conversation_id) {
     const chatContainer = document.getElementById("chat-container");
     const welcomeContainer = document.getElementById("welcome-container");
     if (welcomeContainer) {
         welcomeContainer.style.display = "none";
     }
+
+    // Create a wrapper div with the conversation_id
+    const conversationWrapper = document.createElement("div");
+    conversationWrapper.classList.add("conversation-wrapper");
+    conversationWrapper.setAttribute("data-conversation-id", conversation_id);
 
     const messageContainer = document.createElement("div");
     messageContainer.classList.add("user-message-container");
@@ -290,47 +296,75 @@ function appendUserMessage(content) {
     allUserMessages.appendChild(profilePicContainer);
     allUserMessages.appendChild(messageContainer);
 
-    // Append the message container to the chat container
-    chatContainer.appendChild(allUserMessages);
+    // Append the all user messages container to the conversation wrapper
+    conversationWrapper.appendChild(allUserMessages);
+
+    // Append the conversation wrapper to the chat container
+    chatContainer.appendChild(conversationWrapper);
+
+    // Scroll to the bottom of the chat container
+    scrollToBottom();
+}
+function appendChatbotMessage(content, conversation_id) {
+    const chatContainer = document.getElementById("chat-container");
+
+    // Find the existing conversation wrapper with the same conversation_id
+    let conversationWrapper = document.querySelector(
+        `.conversation-wrapper[data-conversation-id="${conversation_id}"]`
+    );
+
+    // If no wrapper exists for this conversation_id, create one
+    if (!conversationWrapper) {
+        conversationWrapper = document.createElement("div");
+        conversationWrapper.classList.add("conversation-wrapper");
+        conversationWrapper.setAttribute("data-conversation-id", conversation_id);
+        chatContainer.appendChild(conversationWrapper);
+    }
+
+    const messageContainer = document.createElement("div");
+    messageContainer.classList.add("chatbot-message-container");
+
+    // Create the main content wrapper
+    const messageContentWrapper = document.createElement("div");
+    messageContentWrapper.classList.add("chatbot-message");
+    messageContentWrapper.classList.add("message");
+
+    // Create the text content container
+    const textContentContainer = document.createElement("div");
+    textContentContainer.classList.add("text-content-container");
+
+    if (content) {
+        textContentContainer.innerHTML = marked.parse(content);
+    }
+
+    // Append the text content container to the main content wrapper
+    messageContentWrapper.appendChild(textContentContainer);
+
+    // Append the message content wrapper to the message container
+    messageContainer.appendChild(messageContentWrapper);
+
+    // Append the message container to the correct conversation wrapper
+    conversationWrapper.appendChild(messageContainer);
 
     // Scroll to the bottom of the chat container
     scrollToBottom();
 }
 
-function appendChatbotMessage(content) {
-  const chatContainer = document.getElementById("chat-container");
-
-  const messageContainer = document.createElement("div");
-  messageContainer.classList.add("chatbot-message-container");
-
-  // Create the main content wrapper
-  const messageContentWrapper = document.createElement("div");
-  messageContentWrapper.classList.add("chatbot-message");
-  messageContentWrapper.classList.add("message");
-
-  // Create the text content container
-  const textContentContainer = document.createElement("div");
-  textContentContainer.classList.add("text-content-container");
-
-  if (content) {
-      textContentContainer.innerHTML = marked.parse(content);
-  }
-
-  // Append the text content container to the main content wrapper
-  messageContentWrapper.appendChild(textContentContainer);
-
-  // Append the message content wrapper to the message container
-  messageContainer.appendChild(messageContentWrapper);
-
-  // Append the message container to the chat container
-  chatContainer.appendChild(messageContainer);
-
-  // Scroll to the bottom of the chat container
-  scrollToBottom()
-
-}
-function appendSQLDataMessage(content) {
+function appendSQLDataMessage(content, conversation_id) {
     const chatContainer = document.getElementById("chat-container");
+
+    // Find the existing conversation wrapper with the same conversation_id
+    let conversationWrapper = document.querySelector(
+        `.conversation-wrapper[data-conversation-id="${conversation_id}"]`
+    );
+
+    // If no wrapper exists for this conversation_id, create one
+    if (!conversationWrapper) {
+        conversationWrapper = document.createElement("div");
+        conversationWrapper.classList.add("conversation-wrapper");
+        conversationWrapper.setAttribute("data-conversation-id", conversation_id);
+        chatContainer.appendChild(conversationWrapper);
+    }
 
     // Create the show/hide button
     const showHideButton = document.createElement("div");
@@ -375,9 +409,9 @@ function appendSQLDataMessage(content) {
     // Append the message content wrapper to the message container
     messageContainer.appendChild(messageContentWrapper);
 
-    // Append the show/hide button and message container to the chat container
-    chatContainer.appendChild(showHideButton);
-    chatContainer.appendChild(messageContainer);
+    // Append the show/hide button and message container to the conversation wrapper
+    conversationWrapper.appendChild(showHideButton);
+    conversationWrapper.appendChild(messageContainer);
 
     // Add event listener to toggle the visibility of the message container and rotate the arrow
     showHideButton.addEventListener("click", () => {
@@ -389,11 +423,24 @@ function appendSQLDataMessage(content) {
     // Scroll to the bottom of the chat container
     scrollToBottom();
 }
-function appendSQLQuerry(content) {
+function appendSQLQuery(message, content, conversationId) {
     const chatContainer = document.getElementById("chat-container");
     const welcomeContainer = document.getElementById("welcome-container");
     if (welcomeContainer) {
         welcomeContainer.style.display = "none";
+    }
+
+    // Find the existing conversation wrapper with the same conversationId
+    let conversationWrapper = document.querySelector(
+        `.conversation-wrapper[data-conversation-id="${conversationId}"]`
+    );
+
+    // If no wrapper exists for this conversationId, create one
+    if (!conversationWrapper) {
+        conversationWrapper = document.createElement("div");
+        conversationWrapper.classList.add("conversation-wrapper");
+        conversationWrapper.setAttribute("data-conversation-id", conversationId);
+        chatContainer.appendChild(conversationWrapper);
     }
 
     const messageContainer = document.createElement("div");
@@ -401,19 +448,27 @@ function appendSQLQuerry(content) {
 
     // Create the main content wrapper
     const messageContentWrapper = document.createElement("div");
-    messageContentWrapper.classList.add("chatbot-sql-message");
-    messageContentWrapper.classList.add("message");
+    messageContentWrapper.classList.add("chatbot-sql-message", "message");
 
-    // Create the text content container
+    // Create the text content container (editable)
     const textContentContainer = document.createElement("div");
     textContentContainer.classList.add("sql-text-content-container");
-
+    textContentContainer.setAttribute("contenteditable", "true");
     textContentContainer.textContent = content;
 
-    // Append the text content and action container to the main content wrapper
-    messageContentWrapper.appendChild(textContentContainer);
+    // Create Execute button
+    const executeButton = document.createElement("button");
+    executeButton.classList.add("execute-sql-button");
+    executeButton.textContent = "Execute";
+    executeButton.onclick = function () {
+        executeSQLQuery(message, textContentContainer.textContent, conversationId);
+    };
 
-    // Append the message content wrapper and edit icon container to the message container
+    // Append text content and button to the main content wrapper
+    messageContentWrapper.appendChild(textContentContainer);
+    messageContentWrapper.appendChild(executeButton);
+
+    // Append the message content wrapper to the message container
     messageContainer.appendChild(messageContentWrapper);
 
     const allUserMessages = document.createElement("div");
@@ -432,13 +487,164 @@ function appendSQLQuerry(content) {
     allUserMessages.appendChild(botPicContainer);
     allUserMessages.appendChild(messageContainer);
 
-    // Append the message container to the chat container
-    chatContainer.appendChild(allUserMessages);
+    // Append the message container to the correct conversation wrapper
+    conversationWrapper.appendChild(allUserMessages);
 
     // Scroll to the bottom of the chat container
-    scrollToBottom()
-
+    scrollToBottom();
 }
+
+
+async function generateSQLQuery(message, conversationId) {
+    // Step 2: Generate the SQL query using the relevant schema
+    const sqlQueryResponse = await fetch("/generate_sql_query", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            user_input: message,
+            session_id: currentSessionId,
+        }),
+    });
+
+    if (!sqlQueryResponse.ok) {
+        console.error("Error generating SQL query:", sqlQueryResponse.statusText);
+        appendChatbotMessage("Error: Could not generate SQL query.", conversationId);
+        return "";
+    }
+    
+    // Stream the response
+    appendSQLQuery(message, "", conversationId); // Add an empty chatbot message container for streaming
+    const sqlReader = sqlQueryResponse.body.getReader();
+    const SQLDecoder = new TextDecoder("utf-8");
+    const sqlContainers = document.querySelectorAll(".chatbot-sql-container");
+    const sqlContainer = sqlContainers[sqlContainers.length - 1];
+    let resultSQLText = sqlContainer.querySelector(".sql-text-content-container");
+
+    let SQLdone = false;
+    let sqlQuery = "";
+
+    while (!SQLdone) {
+        const { value, done: readerDone } = await sqlReader.read();
+        SQLdone = readerDone;
+
+        if (value) {
+            sqlQuery += SQLDecoder.decode(value);
+            resultSQLText.innerHTML = marked.parse(sqlQuery);
+        }
+        // Scroll to the bottom
+        scrollToBottom();
+    }
+    return sqlQuery;
+}
+
+async function executeSQLQuery(message, sqlQuery, conversationId){
+    if (!sqlQuery) {
+        console.log("SQL query is not returned, using default message.");
+        sqlData = "Answer this question in general without SQL data."; // Default message if no SQL query is generated
+    } else {
+        // Step 3: Execute the SQL query using the generated SQL query
+        const executeQueryResponse = await fetch("/execute_sql_query", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                sql_query: sqlQuery, // Pass the generated SQL query to execute
+            }),
+        });
+
+        if (!executeQueryResponse.ok) {
+            console.error("Error executing SQL query:", executeQueryResponse.statusText);
+            appendChatbotMessage("Error: Could not execute SQL query.", conversationId);
+            return;
+        }
+
+        const executeQueryData = await executeQueryResponse.json();
+        sqlData = executeQueryData.sql_data;
+    }
+
+    if (!sqlData) {
+        console.error("SQL data is missing in the response.");
+        appendChatbotMessage("Error: No data returned from SQL query.", conversationId);
+        return;
+    }
+
+    appendSQLDataMessage(sqlData, conversationId)
+    invoke_agent(message, sqlQuery, sqlData, conversationId)
+}
+
+async function invoke_agent(message, sqlQuery, sqlData, conversationId){
+    // Step 3: Invoke the agent for response
+    const responseAgent = await fetch("/invoke_agent", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            session_id: currentSessionId,
+            user_input: message,
+            sql_data: sqlData,
+        }),
+    });
+
+    if (!responseAgent.ok) {
+        console.error("Error invoking agent:", responseAgent.statusText);
+        appendChatbotMessage("Error: " + responseAgent.statusText, conversationId);
+        return;
+    }
+
+    // Stream the response
+    appendChatbotMessage("", conversationId); // Add an empty chatbot message container for streaming
+    const reader = responseAgent.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    const messageContainers = document.querySelectorAll(".chatbot-message-container");
+    const messageContainer = messageContainers[messageContainers.length - 1];
+    let resultText = messageContainer.querySelector(".text-content-container");
+
+    let done = false;
+    let llmOutput = "";
+    const userInput = document.getElementById("userInput");
+    userInput.setAttribute("contenteditable", "true");
+    userInput.focus();
+
+    while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+
+        if (value) {
+            llmOutput += decoder.decode(value);
+            resultText.innerHTML = marked.parse(llmOutput);
+        }
+        // Scroll to the bottom
+        scrollToBottom()
+
+    }
+
+    // Step 4: Update conversation in the session
+    const responseUpdateSession = await fetch("/update_session_chatbot_response", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            session_id: currentSessionId,
+            prompt: message,
+            chatbot_assistant: llmOutput,
+            sql_query: sqlQuery,
+            sql_data: sqlData,
+            conversation_id: conversationId,
+        }),
+    });
+
+    if (!responseUpdateSession.ok) {
+        console.error("Error updating session:", responseUpdateSession.statusText);
+        appendChatbotMessage("Error: " + responseUpdateSession.statusText, conversationId);
+    }
+}
+
+
 
 async function generateChatbotAnswer() {
     const userInput = document.getElementById("userInput");
@@ -451,8 +657,26 @@ async function generateChatbotAnswer() {
     userInput.setAttribute("contenteditable", "false");
     sendButton.disabled = true;
 
+
+    // Fetch the random conversation ID using the /get_random_conversation_id route
+    const conversationResponse = await fetch("/get_random_conversation_id", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ session_id: currentSessionId }),
+    });
+
+    if (!conversationResponse.ok) {
+        console.error("Error fetching conversation ID:", conversationResponse.statusText);
+        throw new Error("Failed to fetch conversation ID");
+    }
+
+    const conversationData = await conversationResponse.json();
+    const conversationId = conversationData.conversation_id; // Assuming the ID is returned as 'conversation_id'
+    console.log("conversationId", conversationId)
     // Append the user message block
-    appendUserMessage(message);
+    appendUserMessage(message, conversationId);
     userInput.innerText = "";
 
     loadingAnimation()
@@ -484,167 +708,30 @@ async function generateChatbotAnswer() {
             updateSidebarWithSession(currentSessionId, message, sessionIcon);
         }
 
+
         // If the session already exists, assign a default or placeholder icon
         if (!sessionIcon) {
             sessionIcon = "default_icon"; // Replace with an actual default icon if necessary
         }
 
-        // Step 1: Extract relevant schema
-        const schemaResponse = await fetch("/extract_relavant_schema", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                user_input: message,
-                session_id: currentSessionId,
-            }),
-        });
-
-        if (!schemaResponse.ok) {
-            console.error("Error extracting relevant schema:", schemaResponse.statusText);
-            appendChatbotMessage("Error: Could not extract relevant schema.");
-            return;
-        }
-
-        const schemaData = await schemaResponse.json();
-        const relavantSchema = schemaData.relavant_schema;
-        if (!relavantSchema) {
-            console.error("Relevant schema is missing in the response.");
-            appendChatbotMessage("Error: Relevant schema is missing.");
-            return;
-        }
-
-        // Step 2: Generate the SQL query using the relevant schema
-        const sqlQueryResponse = await fetch("/generate_sql_query", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                user_input: message,
-                relavant_schema: relavantSchema,
-                session_id: currentSessionId,
-            }),
-        });
-
-        if (!sqlQueryResponse.ok) {
-            console.error("Error generating SQL query:", sqlQueryResponse.statusText);
-            appendChatbotMessage("Error: Could not generate SQL query.");
-            return;
-        }
         
-        // Stream the response
-        appendSQLQuerry(""); // Add an empty chatbot message container for streaming
-        const sqlReader = sqlQueryResponse.body.getReader();
-        const SQLDecoder = new TextDecoder("utf-8");
-        const sqlContainers = document.querySelectorAll(".chatbot-sql-container");
-        const sqlContainer = sqlContainers[sqlContainers.length - 1];
-        let resultSQLText = sqlContainer.querySelector(".sql-text-content-container");
 
-        let SQLdone = false;
-        let sqlQuery = "";
-
-        while (!SQLdone) {
-            const { value, done: readerDone } = await sqlReader.read();
-            SQLdone = readerDone;
-
-            if (value) {
-                sqlQuery += SQLDecoder.decode(value);
-                resultSQLText.innerHTML = marked.parse(sqlQuery);
-            }
-            // Scroll to the bottom
-            scrollToBottom()
-
-        }
-
-        if (!sqlQuery) {
-            console.log("SQL query is not returned, using default message.");
-            sqlData = "Answer this question in general without SQL data."; // Default message if no SQL query is generated
-        } else {
-            // Step 3: Execute the SQL query using the generated SQL query
-            const executeQueryResponse = await fetch("/execute_sql_query", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    sql_query: sqlQuery, // Pass the generated SQL query to execute
-                }),
-            });
-
-            if (!executeQueryResponse.ok) {
-                console.error("Error executing SQL query:", executeQueryResponse.statusText);
-                appendChatbotMessage("Error: Could not execute SQL query.");
-                return;
-            }
-
-            const executeQueryData = await executeQueryResponse.json();
-            sqlData = executeQueryData.sql_data;
-        }
-
-        if (!sqlData) {
-            console.error("SQL data is missing in the response.");
-            appendChatbotMessage("Error: No data returned from SQL query.");
-            return;
-        }
-
-        appendSQLDataMessage(sqlData)
+        const sqlQuery = await generateSQLQuery(message, conversationId);
+        
         
         const loadingAnimationConst = document.getElementById("slide-loading-animation");
         if (loadingAnimationConst) {
             loadingAnimationConst.remove();
         }
         
-        // Step 3: Invoke the agent for response
-        const responseAgent = await fetch("/invoke_agent", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                session_id: currentSessionId,
-                user_input: message,
-                relavant_schema: relavantSchema,
-                sql_data: sqlData,
-            }),
-        });
-
-        if (!responseAgent.ok) {
-            console.error("Error invoking agent:", responseAgent.statusText);
-            appendChatbotMessage("Error: " + responseAgent.statusText);
-            return;
-        }
-
-        // Stream the response
-        appendChatbotMessage(""); // Add an empty chatbot message container for streaming
-        const reader = responseAgent.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        const messageContainers = document.querySelectorAll(".chatbot-message-container");
-        const messageContainer = messageContainers[messageContainers.length - 1];
-        let resultText = messageContainer.querySelector(".text-content-container");
-
-        let done = false;
-        let llmOutput = "";
-        const userInput = document.getElementById("userInput");
-        userInput.setAttribute("contenteditable", "true");
-        userInput.focus();
-
-        while (!done) {
-            const { value, done: readerDone } = await reader.read();
-            done = readerDone;
-
-            if (value) {
-                llmOutput += decoder.decode(value);
-                resultText.innerHTML = marked.parse(llmOutput);
-            }
-            // Scroll to the bottom
-            scrollToBottom()
-
-        }
-
+        
+        console.log("sqlQuery", sqlQuery)
+        console.log("message", message)
+        console.log("conversationId", conversationId)
+        console.log("sessionIcon", sessionIcon)
+        console.log("currentSessionId", currentSessionId)
         // Step 4: Update conversation in the session
-        const responseUpdateSession = await fetch("/update_session", {
+        const responseUpdateSession = await fetch("/update_session_query_only", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -652,20 +739,19 @@ async function generateChatbotAnswer() {
             body: JSON.stringify({
                 session_id: currentSessionId,
                 prompt: message,
-                chatbot_assistant: llmOutput,
                 sql_query: sqlQuery,
-                sql_data: sqlData,
+                conversation_id: conversationId,
                 session_icon: sessionIcon,
             }),
         });
 
         if (!responseUpdateSession.ok) {
             console.error("Error updating session:", responseUpdateSession.statusText);
-            appendChatbotMessage("Error: " + responseUpdateSession.statusText);
+            appendChatbotMessage("Error: " + responseUpdateSession.statusText, conversationId);
         }
     } catch (error) {
         console.error("Error during fetch or streaming:", error.message);
-        appendChatbotMessage("Error: " + error.message);
+        appendChatbotMessage("Error: " + error.message, conversationId);
     } finally {
         // Reset the input, Loading animation and send button
         resetSendButton()

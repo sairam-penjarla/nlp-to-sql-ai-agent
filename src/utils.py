@@ -25,9 +25,7 @@ class Utilities:
         self.config = get_config()
         self.session_utils = SessionUtilities()
 
-        TOKEN = os.environ.get("TOKEN")
-        HOST = os.environ.get("HOST")
-        self.client = OpenAI(api_key=TOKEN, base_url=f"{HOST}/serving-endpoints")
+        self.client = OpenAI()
 
     def get_user_msg(
         self,
@@ -51,19 +49,6 @@ class Utilities:
             return random_icon
         return icon_name
 
-    def get_relavant_schema(self, llm_output):
-        logger.debug("getting relavant schema")
-        json_data = json.loads(llm_output)
-        RELAVANT_SCHEMA = []
-        for col in json_data["column_names"]:
-            for line in COMPLETE_SCHEMA.split("\n"):
-                if line.startswith(col):
-                    RELAVANT_SCHEMA.append(line)
-                    break
-        if RELAVANT_SCHEMA == []:
-            RELAVANT_SCHEMA = ["Answer this question in general."]
-        return "\n".join(RELAVANT_SCHEMA)
-
     def extract_query(self, llm_output):
         logger.debug("extracting query")
         pattern = r"```(.*?)```"
@@ -77,14 +62,22 @@ class Utilities:
         logger.debug("executing query")
         if query:
             conn = sqlite3.connect("dataset/inventory.db")
-            df = pd.read_sql_query(query, conn)
-            conn.close()
-            # Convert the DataFrame to a markdown-formatted string
+            try:
+                if query.strip().lower().startswith("select"):
+                    df = pd.read_sql_query(query, conn)
+                else:
+                    conn.execute(query)
+                    conn.commit()
+                    df = pd.DataFrame({"Status": ["Query executed successfully"]})
+            except Exception as e:
+                logger.error(f"Error executing query: {e}")
+                df = pd.DataFrame({"Error": [str(e)]})
+            finally:
+                conn.close()
+            
             result_markdown = df.to_markdown(index=False)
-
             return result_markdown
         else:
-            # Return an empty markdown table
             return "|   |   |\n|---|---|\n"
 
     def get_sql_content(self, df):

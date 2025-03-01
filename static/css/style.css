@@ -1077,3 +1077,13 @@ img.bot-pic {
 .chatbot-data-message-container {
   margin-left: 60px;
 }
+button.execute-sql-button {
+    border: 1px solid #d7c0a0;
+    background-color: #39462c;
+    color: white;
+    cursor: pointer;
+    padding: 5px 13px;
+    border-radius: 8px;
+    margin-top: 16px;
+    align-self: flex-end;
+}
